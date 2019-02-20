@@ -490,7 +490,7 @@ This endpoint returns aggregated award amounts for IDVs.
 
 ## IDV Referenced Awards [/api/v2/awards/idvs/awards/]
 
-This endpoint returns referenced awards for IDVs.
+This endpoint returns an array of IDVs or Contracts referenced by a given IDV.
 
 ### IDV Referenced Awards [POST]
 
@@ -499,7 +499,7 @@ This endpoint returns referenced awards for IDVs.
         + award_id: `12178065342fsg` (required, string)
             The v2 generated award hash or internal database id.
         + idv: true (optional, boolean)
-             Field to request an IDV or a regular contract award
+             Return an array of IDV results if true, regular contract awards if false
         + limit: 15 (optional, number)
             The number of results to include per page.
             + Default: 10
@@ -526,6 +526,24 @@ This endpoint returns referenced awards for IDVs.
     + Attributes
         + results (array[IDVReferencedAwardsResponse], fixed-type)
         + page_metadata (PageMetaDataObject)
+
+## IDV Referenced Awards Count [/api/v2/awards/idvs/awards/count]
+
+This endpoint returns the total number of IDVs or Contracts referenced by a given IDV. It can be used in conjunction with `/api/v2/awards/idvs/awards/` to help improve performance when using pagination, since this result will remain constant when the sort order or page number changes.
+
+### IDV Referenced Awards Count [POST]
+
++ Request (application/json)
+    + Attributes (object)
+        + award_id: `12178065342fsg` (required, string)
+            The v2 generated award hash or internal database id.
+        + idv: true (optional, boolean)
+             Return the count of IDVs if true and count of regular contract awards if false
+
++ Response 200 (application/json)
+    + Attributes
+        + count: 45 (number, required)
+            The total number of results for the same request payload to `/api/v2/awards/idvs/awards/`.
 
 # Data Structures
 
