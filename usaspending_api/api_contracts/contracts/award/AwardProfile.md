@@ -52,7 +52,12 @@ This endpoint returns a list of data that is associated with the award profile p
         + B
         + C
         + D
-+ type_description: `Definitive Contracts` (required, string)
++ type_description: `Definitive Contracts` (required, enum[string])
+    + Members
+        + `Blanket Purchase Agreements (BPA) Calls`
+        + `Purchase Orders (PO)`
+        + `Delivery Orders (DO)`
+        + `Definitive Contracts`
 + generated_unique_award_id: `25764264` (required, string)
 + piid: `W31P4Q15A0024` (required, string)
     Award id
@@ -89,7 +94,16 @@ This endpoint returns a list of data that is associated with the award profile p
         + `IDV_C`
         + `IDV_D`
         + `IDV_E`
-+ type_description: `Blanket Purchase Agreements (BPA) Calls` (required, string)
++ type_description: `Blanket Purchase Agreements (BPA) Calls` (required, enum[string])
+    + Members
+        + `Government-Wide Acquisition Contract (GWAC)`
+        + `Multi-Agency Contract, Other Indefinite Delivery Contract (IDC)`
+        + `INDEFINITE DELIVERY / REQUIREMENTS`
+        + `INDEFINITE DELIVERY / INDEFINITE QUANTITY`
+        + `INDEFINITE DELIVERY / DEFINITE QUANTITY`
+        + `Federal Supply Schedule (FSS)`
+        + `Basic Ordering Agreement (BOA)`
+        + `Blanket Purchase Agreements (BPA) Calls`
 + generated_unique_award_id: `6657452ew23` (required, string)
 + piid: `W31P4Q15A0024` (required, string)
     Award id
@@ -134,7 +148,18 @@ This endpoint returns a list of data that is associated with the award profile p
         + `09`
         + `10`
         + `11`
-+ type_description: `Direct Loans` (required, string)
++ type_description: `Direct Loans` (required, enum[string])
+    + Members
+        + `Block Grant`
+        + `Formula Grant`
+        + `Project Grant`
+        + `Cooperative Agreement`
+        + `Direct Payment with Unrestricted Use`
+        + `Direct Payment for Specified Use`
+        + `Direct Loans`
+        + `Guaranteed/Insured Loans`
+        + `Insurance`
+        + `Other Financial Assistance`
 + generated_unique_award_id: `42954959` (required, string)
 + fain: `43533A3` (required, string, nullable)
 + uri: `5341QQ` (required, string, nullable)
@@ -198,14 +223,14 @@ This endpoint returns a list of data that is associated with the award profile p
 + business_categories (required, array[string])
     Names of the recipients' business catagories in human readable format
 
-##PeriodOfPerformance
+## PeriodOfPerformance
 + start_date: `2004-02-19` (required, string)
 + end_date: `2005-02-19` (required, string)
     Corresponds to database fields current_end_date for contracts and ordering_period_end_date for IDVs
 + last_modified_date: `2301-02-20` (required, string)
 + potential_end_date: `2301-02-23` (required, string, nullable)
 
-##PeriodOfPerformanceAssistance
+## PeriodOfPerformanceAssistance
 + start_date: `2004-02-19` (required, string, nullable)
 + end_date: `2005-02-19` (required, string, nullable)
 + last_modified_date: `2301-02-20` (required, string, nullable)
@@ -275,7 +300,7 @@ This endpoint returns a list of data that is associated with the award profile p
 ## Officer
 + name: `John Doe` (required, string)
 + amount: 234242 (required, number)
-<!--
+
 # Group Tables
 
 These endpoints support the tables on the individual Award Profile pages.
@@ -463,11 +488,11 @@ This endpoint returns aggregated award amounts for IDVs.
     + Attributes
         + Attributes (AwardAmountsResponse)
 
-## IDV Related Awards [/api/v2/awards/idvs/awards/]
+## IDV Referenced Awards [/api/v2/awards/idvs/awards/]
 
-This endpoint returns related awards for IDVs.
+This endpoint returns referenced awards for IDVs.
 
-### IDV Related Awards [POST]
+### IDV Referenced Awards [POST]
 
 + Request (application/json)
     + Attributes (object)
@@ -499,7 +524,7 @@ This endpoint returns related awards for IDVs.
 
 + Response 200 (application/json)
     + Attributes
-        + results (array[IDVRelatedAwardsResponse], fixed-type)
+        + results (array[IDVReferencedAwardsResponse], fixed-type)
         + page_metadata (PageMetaDataObject)
 
 # Data Structures
@@ -514,12 +539,15 @@ This endpoint returns related awards for IDVs.
 + rollup_base_and_all_options_value: 106321.10 (required, number)
 + rollup_total_obligation: 106321.10 (required, number)
 
-## IDVRelatedAwardsResponse (object)
+## IDVReferencedAwardsResponse (object)
 + award_id: 12178065 (required, number)
     The award id sent in the request.
 + generated_unique_award_id: `CONT_AW_1540_NONE_DJB30605051_NONE` (required, string)
 + piid: `W31P4Q15A0024` (required, string)
-+ funding_agency (required, Agency, fixed-type)
++ funding_agency: `NATIONAL AERONAUTICS AND SPACE ADMINISTRATION (NASA)` (required, string)
+    The name of the funding agency with its acronym when applicable.
++ funding_agency_id: `862` (required, string)
+    The USAspending internal agency id of funding_agency. 
 + award_type: `BPA`(required, string)
 + obligated_amount: 242342 (required, number)
 + description: `reerwrawa` (required, string, nullable)
@@ -529,4 +557,4 @@ This endpoint returns related awards for IDVs.
     The ending date of the contract in the format `YYYY-MM-DD`
 + last_date_to_order: `2301-02-23` (required, string, nullable)
 
- -->
+ 
