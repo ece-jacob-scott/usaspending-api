@@ -564,7 +564,7 @@ This endpoint returns the total number of IDVs or Contracts referenced by a give
 + piid: `W31P4Q15A0024` (required, string)
 + funding_agency: `NATIONAL AERONAUTICS AND SPACE ADMINISTRATION (NASA)` (required, string)
     The name of the funding agency with its acronym when applicable.
-+ funding_agency_id: `862` (required, string)
++ funding_agency_id: 862 (required, number)
     The USAspending internal agency id of funding_agency. 
 + award_type: `BPA`(required, string)
 + obligated_amount: 242342 (required, number)
