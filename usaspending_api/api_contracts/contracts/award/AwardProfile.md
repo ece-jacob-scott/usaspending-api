@@ -537,13 +537,13 @@ This endpoint returns the total number of IDVs or Contracts referenced by a give
     + Attributes (object)
         + award_id: `12178065342fsg` (required, string)
             The v2 generated award hash or internal database id.
-        + idv: true (optional, boolean)
-             Return the count of IDVs if true and count of regular contract awards if false
 
 + Response 200 (application/json)
     + Attributes
-        + count: 45 (number, required)
-            The total number of results for the same request payload to `/api/v2/awards/idvs/awards/`.
+        + idvs: 45 (number, required)
+            The total number of Contract IDVs referenced by the given IDV.
+        + contracts: 52 (number, required)
+            The total number of Contracts referenced by the given IDV.
 
 # Data Structures
 
