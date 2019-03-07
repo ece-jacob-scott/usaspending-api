@@ -15,6 +15,7 @@ logger = logging.getLogger('console')
 cfda_relative_path = '/usaspending_api/references/management/commands/programs-full-usaspending.csv'
 cfda_abs_path = os.path.join(settings.BASE_DIR + cfda_relative_path)
 
+S3_CFDA_FILE = 'https://files.usaspending.gov/reference_data/cfda.csv'
 CFDA_FILE_FORMAT = settings.CFDA_FILE_PATH
 WEEKDAY_UPLOADED = 5  # datetime.weekday()'s integer representing the day it's usually uploaded (Saturday)
 DAYS_TO_SEARCH = 4 * 7  # 4 weeks
@@ -67,23 +68,36 @@ class Command(BaseCommand):
             action='store_true',
             dest='update-file',
             default=False,
-            help='Pull the updated CSV from ftp.cfda.gov before running.'
+            help='Pull the updated CSV before running.'
+        )
+        parser.add_argument(
+            '--pull-external',
+            action='store_true',
+            dest='pull-external',
+            default=False,
+            help='Pull the updated CSV from ftp.cfda.gov.'
         )
 
     def handle(self, *args, **options):
 
-        if options['update-file']:
-            gsa_connection = boto3.resource('s3', region_name=settings.CFDA_REGION)
-            # disregard aws credentials for public file
-            gsa_connection.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
-            gsa_bucket = gsa_connection.Bucket(settings.CFDA_BUCKET_NAME)
+        
 
-            latest_file = self.find_latest_file(gsa_bucket)
-            if not latest_file:
-                logger.error('Could not find cfda file. Local not updated.')
+        if options['update-file']:
+            if options['pull-external']:
+                gsa_connection = boto3.resource('s3', region_name=settings.CFDA_REGION)
+                # disregard aws credentials for public file
+                gsa_connection.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
+                gsa_bucket = gsa_connection.Bucket(settings.CFDA_BUCKET_NAME)
+
+                latest_file = self.find_latest_file(gsa_bucket)
+                if not latest_file:
+                    logger.error('Could not find cfda file. Local not updated.')
+                else:
+                    logger.info('Updating {} with new file {}...'.format(cfda_abs_path, latest_file))
+                    gsa_bucket.download_file(latest_file, cfda_abs_path)
             else:
-                logger.info('Updating {} with new file {}...'.format(cfda_abs_path, latest_file))
-                gsa_bucket.download_file(latest_file, cfda_abs_path)
+                r = requests.get(S3_CFDA_FILE, allow_redirects=True)
+                open(cfda_abs_path, 'wb').write(r.content)
 
         load_cfda(cfda_abs_path)
 
