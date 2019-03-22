@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 
 from psycopg2.sql import Identifier, Literal, SQL
@@ -8,6 +9,7 @@ from usaspending_api.common.cache_decorator import cache_response
 from usaspending_api.common.helpers.sql_helpers import execute_sql_to_ordered_dictionary
 from usaspending_api.common.views import APIDocumentationView
 from usaspending_api.common.validator.award import get_internal_or_generated_award_id_model
+from usaspending_api.common.validator.pagination import PAGINATION
 from usaspending_api.common.validator.tinyshield import TinyShield
 from usaspending_api.common.helpers.generic_helper import get_simple_pagination_metadata
 
@@ -35,7 +37,7 @@ FUNDING_TREEMAP_SQL = SQL("""
         inner join financial_accounts_by_awards faba on
             faba.award_id = ca.id
         left outer join treasury_appropriation_account taa on
-            taa.treasury_account_identifier = faba.treasury_account_id {group_by};""")
+            taa.treasury_account_identifier = faba.treasury_account_id {group_by} {pagination};""")
 
 
 class IDVFundingBaseViewSet(APIDocumentationView):
@@ -47,23 +49,31 @@ class IDVFundingBaseViewSet(APIDocumentationView):
 
     @staticmethod
     def _parse_and_validate_request(request: dict) -> dict:
-        return TinyShield([get_internal_or_generated_award_id_model()]).block(request)
+        models = [get_internal_or_generated_award_id_model()]
+        models.extend(copy.deepcopy(PAGINATION))
+        return TinyShield(models).block(request)
 
-    @staticmethod
-    def _business_logic(request_data: dict, columns: str, group_by: str) -> list:
+    
+    def _business_logic(self, request_data: dict, columns: str, group_by: str) -> list:
         # By this point, our award_id has been validated and cleaned up by
         # TinyShield.  We will either have an internal award id that is an
         # integer or a generated award id that is a string.
         award_id = request_data['award_id']
         award_id_column = 'award_id' if type(award_id) is int else 'generated_unique_award_id'
-
         sql = FUNDING_TREEMAP_SQL.format(
             columns=SQL(columns),
             award_id_column=Identifier(award_id_column),
             award_id=Literal(award_id),
             group_by=SQL(group_by),
+            pagination=SQL(self._get_pagination_string(request_data)),
         )
         return execute_sql_to_ordered_dictionary(sql)
+
+    @staticmethod
+    def _get_pagination_string(request_data: dict) -> str:
+        limit = request_data['limit'] + 1
+        offset = (request_data['page'] - 1) * request_data['limit']
+        return "limit {} offset {}".format(str(limit), str(offset))
 
 
 class IDVFundingRollupViewSet(IDVFundingBaseViewSet):
