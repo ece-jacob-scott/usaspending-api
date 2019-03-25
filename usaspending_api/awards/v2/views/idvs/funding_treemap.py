@@ -1,3 +1,4 @@
+import copy
 from collections import OrderedDict
 
 from psycopg2.sql import Identifier, Literal, SQL
@@ -9,7 +10,8 @@ from usaspending_api.common.helpers.sql_helpers import execute_sql_to_ordered_di
 from usaspending_api.common.views import APIDocumentationView
 from usaspending_api.common.validator.award import get_internal_or_generated_award_id_model
 from usaspending_api.common.helpers.generic_helper import get_simple_pagination_metadata
-from usaspending_api.common.validator.tinyshield import validate_post_request
+from usaspending_api.common.validator.tinyshield_v2 import validate_request
+from usaspending_api.common.validator.pagination import PAGINATION
 
 
 FUNDING_TREEMAP_SQL = SQL("""
@@ -63,7 +65,7 @@ class IDVFundingBaseViewSet(APIDocumentationView):
         return execute_sql_to_ordered_dictionary(sql)
 
 
-@validate_post_request([get_internal_or_generated_award_id_model()])
+@validate_request([get_internal_or_generated_award_id_model()]+copy.deepcopy(PAGINATION))
 class IDVFundingRollupViewSet(IDVFundingBaseViewSet):
 
     """
