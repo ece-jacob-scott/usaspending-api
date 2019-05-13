@@ -232,9 +232,11 @@ Returns a list of cities matching search criteria
 + Response 200 (application/json)
     + Attributes (object)
         + count: 10 (required, number)
-        + results (required, AutocompleteCityResult)
+        + results (required, AutocompleteCityResultNull)
 
 # Data Structures
+
+## AutocompleteCityResultNull (array)
 
 ## AutocompleteCityResult (array)
 - (object)
