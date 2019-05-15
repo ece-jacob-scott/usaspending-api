@@ -36,7 +36,7 @@ from usaspending_api.etl.es_etl_helpers import take_snapshot
 # [command] --index_name=NEWINDEX --reload-all
 
 DEFAULT_DATETIME = datetime.strptime("2007-10-01+0000", "%Y-%m-%d%z")
-ES = Elasticsearch(settings.ES_HOSTNAME, use_ssl=True, verify_certs=True, timeout=300)
+ES = Elasticsearch(settings.ES_HOSTNAME, use_ssl=True, verify_certs=True, timeout=300, ca_certs=certifi.where())
 INDEX_MAPPING_FILE = "usaspending_api/etl/es_transaction_mapping.json"
 
 
