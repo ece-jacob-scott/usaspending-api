@@ -10,6 +10,7 @@ from usaspending_api.common.views import APIDocumentationView
 from usaspending_api.common.elasticsearch.client import es_client_query
 from usaspending_api.search.v2.elasticsearch_helper import es_sanitize
 from usaspending_api.common.validator.tinyshield import validate_post_request
+from usaspending_api.search.v2.elasticsearch_helper import es_sanitize
 
 
 logger = logging.getLogger("console")
@@ -68,8 +69,16 @@ class CityAutocompleteViewSet(APIDocumentationView):
             "query": query_string,
             "aggs": {
                 "cities": {
-                    "terms": {"field": "{}.keyword".format(return_fields[0]), "size": 50000},
-                    "aggs": {"states": {"terms": {"field": return_fields[1], "size": 50000}}},
+                    "terms": {"field": "{}.keyword".format(return_fields[0]), 
+                            "size": 50000,
+                            "order": {
+                                "max_score": "desc"
+                            }},
+                    "aggs": {
+                        "max_score": {"max": {"script": "_score"}},
+                        "states": {"terms": {"field": return_fields[1], "size": 50000}}
+                        
+                        },
                 }
             }
         }
@@ -82,9 +91,9 @@ class CityAutocompleteViewSet(APIDocumentationView):
                 for state_code in city["states"]["buckets"]:
                     results.append(OrderedDict([("city_name", city["key"]), ("state_code", state_code["key"])]))
 
-        sorted_results = sorted(results, key=lambda x: (x["city_name"], x["state_code"]))
+        #sorted_results = sorted(results, key=lambda x: (x["city_name"], x["state_code"]))
 
-        response = OrderedDict([("count", len(sorted_results)), ("results", sorted_results[:limit])])
+        response = OrderedDict([("count", len(results)), ("results", results[:limit])])
         return Response(response)
 
 
@@ -109,4 +118,7 @@ def create_es_search(method, scope, search_text, country=None, state=None):
     query_string = es_sanitize(query_string)
 
     query = {"query_string": {"query": query_string, "allow_leading_wildcard": False}}
+    if not state:
+        # This produces better results for queries without a specified state.
+        query['query_string']["analyzer"] = "keyword_analyzer"
     return query

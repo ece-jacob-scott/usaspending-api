@@ -3,7 +3,7 @@
   "settings": {
     "index.mapping.ignore_malformed": true,
     "index.max_result_window": 50000,
-    "index.refresh_interval": 1,
+    "index.refresh_interval": "1s",
     "index": {
       "number_of_shards" : 3,
       "number_of_replicas" : 1
@@ -13,7 +13,12 @@
         "stemmer_analyzer": {
             "tokenizer": "standard",
             "filter": ["standard", "lowercase", "singular_stemmer"]
-        }
+        },
+        "keyword_analyzer":{
+            "type":"custom",
+            "tokenizer":"keyword",
+            "filter":["lowercase"]
+          }
       },
       "filter": {
         "singular_stemmer": {
