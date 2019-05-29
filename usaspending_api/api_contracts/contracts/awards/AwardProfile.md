@@ -52,7 +52,12 @@ This endpoint returns a list of data that is associated with the award profile p
         + B
         + C
         + D
-+ `type_description`: `Definitive Contracts` (required, string)
++ `type_description` (required, enum[string])
+    + Members
+        + `Blanket Purchase Agreements (BPA) Calls`
+        + `Purchase Orders (PO)`
+        + `Delivery Orders (DO)`
+        + `Definitive Contracts`
 + `generated_unique_award_id`: `25764264` (required, string)
 + `piid`: `W31P4Q15A0024` (required, string)
     Award id
@@ -89,7 +94,16 @@ This endpoint returns a list of data that is associated with the award profile p
         + `IDV_C`
         + `IDV_D`
         + `IDV_E`
-+ type_description: `Blanket Purchase Agreements (BPA) Calls` (required, string)
++ type_description: `Blanket Purchase Agreements (BPA) Calls` (required, enum[string])
+    + Members
+        + `Government-Wide Acquisition Contract (GWAC)`
+        + `Multi-Agency Contract, Other Indefinite Delivery Contract (IDC)`
+        + `INDEFINITE DELIVERY / REQUIREMENTS`
+        + `INDEFINITE DELIVERY / INDEFINITE QUANTITY`
+        + `INDEFINITE DELIVERY / DEFINITE QUANTITY`
+        + `Federal Supply Schedule (FSS)`
+        + `Basic Ordering Agreement (BOA)`
+        + `Blanket Purchase Agreements (BPA) Calls`
 + generated_unique_award_id: `6657452ew23` (required, string)
 + piid: `W31P4Q15A0024` (required, string)
     Award id
@@ -134,48 +148,59 @@ This endpoint returns a list of data that is associated with the award profile p
         + `09`
         + `10`
         + `11`
-+ type_description: `Direct Loans` (required, string)
-+ generated_unique_award_id: `42954959` (required, string)
-+ fain: `43533A3` (required, string, nullable)
-+ uri: `5341QQ` (required, string, nullable)
-+ description: `ewraijwrw` (required, string, nullable)
-+ transaction_obligated_amount: 10700 (required, number, nullable)
++ type_description: `Direct Loans` (required, enum[string])
+    + Members
+        + `Block Grant`
+        + `Formula Grant`
+        + `Project Grant`
+        + `Cooperative Agreement`
+        + `Direct Payment with Unrestricted Use`
+        + `Direct Payment for Specified Use`
+        + `Direct Loans`
+        + `Guaranteed/Insured Loans`
+        + `Insurance`
+        + `Other Financial Assistance`
++ `generated_unique_award_id`: `42954959` (required, string)
++ `fain`: `43533A3` (required, string, nullable)
++ `uri`: `5341QQ` (required, string, nullable)
++ `description`: `ewraijwrw` (required, string, nullable)
++ `transaction_obligated_amount`: 10700 (required, number, nullable)
     Used for Funding Obligated on Grants pages
-+ total_obligation: 2324 (required, number, nullable)
-+ base_exercised_options (required, number, nullable)
-+ total_subsidy_cost: 123 (required, number, nullable)
++ `total_obligation`: 2324 (required, number, nullable)
++ `base_exercised_options` (required, number, nullable)
++ `total_subsidy_cost`: 123 (required, number, nullable)
     null except for loans
-+ total_loan_value: 24343 (required, number, nullable)
++ `total_loan_value`: 24343 (required, number, nullable)
     null except for loans
-+ non_federal_funding (required, number, nullable)
++ `non_federal_funding` (required, number, nullable)
     null except for grants
-+ total_funding (required, number, nullable)
++ `total_funding` (required, number, nullable)
     null except for grants
-+ date_signed: `2006-01-15` (required, string, nullable)
-+ subaward_count: 430 (required, number)
-+ total_subaward_amount: 35345353453 (required, number, nullable)
-+ cfda_objectives: `Some HTML string` (required, string, nullable)
-+ cfda_number: `0.434` (required, string, nullable)
-+ cfda_title: `Flood Insurance` (required, string, nullable)
-+ awarding_agency (required, Agency, fixed-type)
-+ funding_agency (required, Agency, fixed-type, nullable)
-+ recipient (required, Recipient, fixed-type)
-+ period_of_performance (required, PeriodOfPerformanceAssistance, fixed-type)
-+ place_of_performance (required, Location, fixed-type)
++ `date_signed`: `2006-01-15` (required, string, nullable)
++ `subaward_count`: 430 (required, number)
++ `total_subaward_amount`: 35345353453 (required, number, nullable)
++ `cfda_objectives`: `Some HTML string` (required, string, nullable)
++ `cfda_number`: `0.434` (required, string, nullable)
++ `cfda_title`: `Flood Insurance` (required, string, nullable)
++ `awarding_agency` (required, Agency, fixed-type)
++ `funding_agency` (required, Agency, fixed-type, nullable)
++ `recipient` (required, Recipient, fixed-type)
++ `period_of_performance` (required, PeriodOfPerformanceAssistance, fixed-type)
++ `place_of_performance` (required, Location, fixed-type)
 
 ## Agency (object)
-+ id: 123 (required, number)
-+ toptier_agency (required, TopTierAgency, nullable)
-+ subtier_agency (required, SubTierAgency, nullable)
-+ office_agency_name: `STRATEGIC SYSTEMS` (required, string, nullable)
++ `id`: 123 (required, number)
++ `toptier_agency` (required, TopTierAgency, nullable)
++ `subtier_agency` (required, SubTierAgency, nullable)
++ `office_agency_name`: `STRATEGIC SYSTEMS` (required, string, nullable)
 
 ## ParentIDVDetails (object)
-+ award_id: 5738 (required, number, nullable)
-+ idv_type_description: `test` (required, string, nullable)
-+ type_of_idc_description: `r3w` (required, string, nullable)
-+ agency_id: `123` (required, string)
-+ multiple_or_single_aw_desc: `something` (required, string)
-+ piid: `345` (required, string)
++ `award_id`: 5738 (required, number, nullable)
++ `idv_type_description`: `test` (required, string, nullable)
++ `type_of_idc_description`: `r3w` (required, string, nullable)
++ `agency_id`: `123` (required, string)
++ `multiple_or_single_aw_desc`: `something` (required, string)
++ `piid`: `345` (required, string)
 
 ## TopTierAgency (object)
 + name: `Department of Defense` (required, string, nullable)
@@ -186,26 +211,26 @@ This endpoint returns a list of data that is associated with the award profile p
 + abbreviation: `DON` (required, string, nullable)
 
 ## Recipient (object)
-+ recipient_name: `Booz Allen Hamilton` (required, string, nullable)
-+ recipient_hash: `e4096343-5e8f-352a-f8af-d2a8b0f0ae68-C` (required, string)
-+ recipient_unique_id: `2424224` (required, string, nullable)
++ `recipient_name`: `Booz Allen Hamilton` (required, string, nullable)
++ `recipient_hash`: `e4096343-5e8f-352a-f8af-d2a8b0f0ae68-C` (required, string)
++ `recipient_unique_id`: `2424224` (required, string, nullable)
     The recipient's DUNS
-+ parent_recipient_unique_id: `2424232` (required, string, nullable)
++ `parent_recipient_unique_id`: `2424232` (required, string, nullable)
     The recipient's parent's DUNS
-+ location (required, Location, nullable)
++ `location` (required, Location, nullable)
     The recipeint's location
-+ parent_recipient_name: `HoneyWell` (string, nullable)
-+ business_categories (required, array[string])
++ `parent_recipient_name`: `HoneyWell` (string, nullable)
++ `business_categories` (required, array[string])
     Names of the recipients' business catagories in human readable format
 
-##PeriodOfPerformance
+## PeriodOfPerformance
 + `start_date`: `2004-02-19` (required, string)
 + `end_date`: `2005-02-19` (required, string)
     Corresponds to database fields current_end_date for contracts and ordering_period_end_date for IDVs
 + `last_modified_date`: `2301-02-20` (required, string)
 + `potential_end_date`: `2301-02-23` (required, string, nullable)
 
-##PeriodOfPerformanceAssistance
+## PeriodOfPerformanceAssistance
 + `start_date`: `2004-02-19` (required, string, nullable)
 + `end_date`: `2005-02-19` (required, string, nullable)
 + `last_modified_date`: `2301-02-20` (required, string, nullable)
@@ -299,7 +324,7 @@ This endpoint returns a list of data that is associated with the award profile p
 ## Officer
 + name: `John Doe` (required, string)
 + amount: 234242 (required, number)
-<!--
+
 # Group Tables
 
 These endpoints support the tables on the individual Award Profile pages.
@@ -377,4 +402,3 @@ This endpoint returns a list of sub-awards, their amount, action date, recipient
 + hasNext: false (required, boolean)
 + hasPrevious: false (required, boolean)
 
- -->
