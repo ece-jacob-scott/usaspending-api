@@ -7,18 +7,23 @@ from rest_framework import status
 
 ENDPOINT = '/api/v2/awards/idvs/amounts/'
 
+
 EXPECTED_GOOD_OUTPUT = {
     'award_id': 1,
     'generated_unique_award_id': 'CONT_AW_2',
-    'idv_count': 3,
-    'contract_count': 4,
-    'rollup_total_obligation': 10.04,
-    'rollup_base_and_all_options_value': 11.05,
-    'rollup_base_exercised_options_val': 12.06,
+    'child_idv_count': 3,
+    'child_award_count': 4,
+    'child_award_total_obligation': 5.01,
+    'child_award_base_and_all_options_value': 6.02,
+    'child_award_base_exercised_options_val': 7.03,
+    'grandchild_award_count': 5,
+    'grandchild_award_total_obligation': 5.03,
+    'grandchild_award_base_and_all_options_value': 5.03,
+    'grandchild_award_base_exercised_options_val': 5.03,
 }
 
 
-class IDVAwardsTestCase(TestCase):
+class IDVAmountsTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -47,7 +52,6 @@ class IDVAwardsTestCase(TestCase):
             assert json.loads(response.content.decode('utf-8')) == expected_response
 
     def test_awards_idvs_amounts_v2(self):
-
         self._test_get(1, EXPECTED_GOOD_OUTPUT)
         self._test_get('CONT_AW_2', EXPECTED_GOOD_OUTPUT)
         self._test_get(3, {'detail': 'No IDV award found with this id'}, status.HTTP_404_NOT_FOUND)

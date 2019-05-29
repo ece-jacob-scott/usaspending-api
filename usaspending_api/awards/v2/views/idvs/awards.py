@@ -1,18 +1,17 @@
 from collections import OrderedDict
+from copy import deepcopy
 
-from django.db import connections, router
 from psycopg2.sql import Identifier, Literal, SQL
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from usaspending_api.awards.models import Award  # We only use this model to get a connection
 from usaspending_api.common.cache_decorator import cache_response
 from usaspending_api.common.helpers.generic_helper import get_simple_pagination_metadata
+from usaspending_api.common.helpers.sql_helpers import execute_sql_to_ordered_dictionary
 from usaspending_api.common.views import APIDocumentationView
-from usaspending_api.core.validator.award import get_internal_or_generated_award_id_rule
-from usaspending_api.core.validator.pagination import customize_pagination_with_sort_columns
-from usaspending_api.core.validator.tinyshield import TinyShield
-from usaspending_api.etl.broker_etl_helpers import dictfetchall
+from usaspending_api.common.validator.award import get_internal_or_generated_award_id_model
+from usaspending_api.common.validator.pagination import customize_pagination_with_sort_columns
+from usaspending_api.common.validator.tinyshield import TinyShield
 
 
 # Columns upon which the client is allowed to sort.
@@ -27,14 +26,23 @@ SORTABLE_COLUMNS = (
     'piid',
 )
 
+
 DEFAULT_SORT_COLUMN = 'period_of_performance_start_date'
 
-GET_IDVS_SQL = SQL("""
+
+# Justification for having three queries that are very similar: ease of
+# understanding.  Yes, a change to the queries might require three updates,
+# but believe me when I tell you that this is a billion times more comprehensible
+# than the version where I broke the queries down into unique bits and
+# grafted them back together.  If we go beyond three versions, though... perhaps
+# something a little more sophisticated is in order.
+GET_CHILD_IDVS_SQL = SQL("""
     select
         ac.id                                      award_id,
         ac.type_description                        award_type,
         ac.description,
-        tf.funding_agency_name                     funding_agency,
+        tta.name                                   funding_agency,
+        ac.funding_agency_id,
         ac.generated_unique_award_id,
         tf.ordering_period_end_date                last_date_to_order,
         pac.rollup_total_obligation                obligated_amount,
@@ -46,6 +54,8 @@ GET_IDVS_SQL = SQL("""
         inner join parent_award pac on pac.parent_award_id = pap.award_id
         inner join awards ac on ac.id = pac.award_id
         inner join transaction_fpds tf on tf.transaction_id = ac.latest_transaction_id
+        left outer join agency a on a.id = ac.funding_agency_id
+        left outer join toptier_agency tta on tta.toptier_agency_id = a.toptier_agency_id
     where
         pap.{award_id_column} = {award_id}
     order by
@@ -53,12 +63,14 @@ GET_IDVS_SQL = SQL("""
     limit {limit} offset {offset}
 """)
 
-GET_CONTRACTS_SQL = SQL("""
+
+GET_CHILD_AWARDS_SQL = SQL("""
     select
         ac.id                                      award_id,
         ac.type_description                        award_type,
         ac.description,
-        tf.funding_agency_name                     funding_agency,
+        tta.name                                   funding_agency,
+        ac.funding_agency_id,
         ac.generated_unique_award_id,
         tf.ordering_period_end_date                last_date_to_order,
         ac.total_obligation                        obligated_amount,
@@ -69,8 +81,10 @@ GET_CONTRACTS_SQL = SQL("""
         parent_award pap
         inner join awards ap on ap.id = pap.award_id
         inner join awards ac on ac.fpds_parent_agency_id = ap.fpds_agency_id and ac.parent_award_piid = ap.piid and
-            ac.type not like 'IDV\_%%'
+            ac.type not like 'IDV%'
         inner join transaction_fpds tf on tf.transaction_id = ac.latest_transaction_id
+        left outer join agency a on a.id = ac.funding_agency_id
+        left outer join toptier_agency tta on tta.toptier_agency_id = a.toptier_agency_id
     where
         pap.{award_id_column} = {award_id}
     order by
@@ -79,20 +93,57 @@ GET_CONTRACTS_SQL = SQL("""
 """)
 
 
-def _prepare_tiny_shield_rules():
-    """
-    Our TinyShield rules never change.  Encapsulate them here and store them
-    once in TINY_SHIELD_RULES.
-    """
+GET_GRANDCHILD_AWARDS_SQL = SQL("""
+    select
+        ac.id                                      award_id,
+        ac.type_description                        award_type,
+        ac.description,
+        tta.name                                   funding_agency,
+        ac.funding_agency_id,
+        ac.generated_unique_award_id,
+        tf.ordering_period_end_date                last_date_to_order,
+        ac.total_obligation                        obligated_amount,
+        ac.period_of_performance_current_end_date,
+        ac.period_of_performance_start_date,
+        ac.piid
+    from
+        parent_award pap
+        inner join parent_award pac on pac.parent_award_id = pap.award_id
+        inner join awards ap on ap.id = pac.award_id
+        inner join awards ac on ac.fpds_parent_agency_id = ap.fpds_agency_id and ac.parent_award_piid = ap.piid and
+            ac.type not like 'IDV%'
+        inner join transaction_fpds tf on tf.transaction_id = ac.latest_transaction_id
+        left outer join agency a on a.id = ac.funding_agency_id
+        left outer join toptier_agency tta on tta.toptier_agency_id = a.toptier_agency_id
+    where
+        pap.{award_id_column} = {award_id}
+    order by
+        {sort_column} {sort_direction}, ac.id {sort_direction}
+    limit {limit} offset {offset}
+""")
+
+
+TYPE_TO_SQL_MAPPING = {
+    'child_idvs': GET_CHILD_IDVS_SQL,
+    'child_awards': GET_CHILD_AWARDS_SQL,
+    'grandchild_awards': GET_GRANDCHILD_AWARDS_SQL
+}
+
+
+def _prepare_tiny_shield_models():
     models = customize_pagination_with_sort_columns(SORTABLE_COLUMNS, DEFAULT_SORT_COLUMN)
     models.extend([
-        get_internal_or_generated_award_id_rule(),
-        {'key': 'idv', 'name': 'idv', 'type': 'boolean', 'default': True, 'optional': True}
+        get_internal_or_generated_award_id_model(),
+        {
+            'key': 'type', 'name': 'type',
+            'type': 'enum', 'enum_values': tuple(TYPE_TO_SQL_MAPPING),
+            'default': 'child_idvs', 'optional': True
+        }
     ])
-    return TinyShield(models)
+    return models
 
 
-TINY_SHIELD_RULES = _prepare_tiny_shield_rules()
+TINY_SHIELD_MODELS = _prepare_tiny_shield_models()
 
 
 class IDVAwardsViewSet(APIDocumentationView):
@@ -101,8 +152,8 @@ class IDVAwardsViewSet(APIDocumentationView):
     """
 
     @staticmethod
-    def _parse_and_validate_request(request: Request) -> dict:
-        return TINY_SHIELD_RULES.block(request)
+    def _parse_and_validate_request(request: dict) -> dict:
+        return TinyShield(deepcopy(TINY_SHIELD_MODELS)).block(request)
 
     @staticmethod
     def _business_logic(request_data: dict) -> list:
@@ -112,7 +163,7 @@ class IDVAwardsViewSet(APIDocumentationView):
         award_id = request_data['award_id']
         award_id_column = 'award_id' if type(award_id) is int else 'generated_unique_award_id'
 
-        sql = GET_IDVS_SQL if request_data['idv'] else GET_CONTRACTS_SQL
+        sql = TYPE_TO_SQL_MAPPING[request_data['type']]
         sql = sql.format(
             award_id_column=Identifier(award_id_column),
             award_id=Literal(award_id),
@@ -121,16 +172,8 @@ class IDVAwardsViewSet(APIDocumentationView):
             limit=Literal(request_data['limit'] + 1),
             offset=Literal((request_data['page'] - 1) * request_data['limit']),
         )
-        # Because we use multiple read connections, we need to actually choose
-        # a connection.  Using the default connection won't work in production.
-        # A model is a required parameter for db_for_read.
-        connection = connections[router.db_for_read(Award)]
-        with connection.cursor() as cursor:
-            # We must convert this to an actual query string else
-            # django-debug-toolbar will blow up since it is assuming a string
-            # instead of a SQL object.
-            cursor.execute(sql.as_string(connection.connection))
-            return dictfetchall(cursor)
+
+        return execute_sql_to_ordered_dictionary(sql)
 
     @cache_response()
     def post(self, request: Request) -> Response:

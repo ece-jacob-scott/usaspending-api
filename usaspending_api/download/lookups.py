@@ -1,18 +1,27 @@
-# This file defines a series of constants that represent the values used in the API's "helper" tables. Rather than
-# define the values in the db setup scripts and then make db calls to lookup the surrogate keys, we'll define everything
-# here, in a file that can be used by the db setup scripts *and* the application code.
+"""
+This file defines a series of constants that represent the values used in
+the API's "helper" tables.
+
+Rather than define the values in the db setup scripts and then make db calls to
+lookup the surrogate keys, we'll define everything here, in a file that can be
+used by the db setup scripts *and* the application code.
+"""
 
 from collections import namedtuple, OrderedDict
 
 from usaspending_api.accounts.models import AppropriationAccountBalances
 from usaspending_api.accounts.v2.filters.account_download import account_download_filter
+from usaspending_api.awards.models import Award, TransactionNormalized
 from usaspending_api.awards.models import FinancialAccountsByAwards
 from usaspending_api.awards.models_matviews import UniversalAwardView, UniversalTransactionView, SubawardView
-from usaspending_api.awards.v2.filters.matview_filters import (universal_award_matview_filter,
-                                                               universal_transaction_matview_filter)
+from usaspending_api.awards.v2.filters.idv_filters import (
+    idv_order_filter, idv_transaction_filter, idv_treasury_account_funding_filter)
+from usaspending_api.awards.v2.filters.matview_filters import (
+    universal_award_matview_filter, universal_transaction_matview_filter)
 from usaspending_api.awards.v2.filters.sub_award import subaward_download
 from usaspending_api.awards.v2.lookups.lookups import award_type_mapping
 from usaspending_api.financial_activities.models import FinancialAccountsByProgramActivityObjectClass
+
 
 LookupType = namedtuple('LookupType', ['id', 'name', 'desc'])
 
@@ -20,10 +29,14 @@ JOB_STATUS = [
     LookupType(1, 'ready', 'job is ready to be run'),
     LookupType(2, 'running', 'job is currently in progress'),
     LookupType(3, 'finished', 'job is complete'),
-    LookupType(4, 'failed', 'job failed to complete')
+    LookupType(4, 'failed', 'job failed to complete'),
+    LookupType(5, 'queued', 'job sent to queue for async processing'),
+    LookupType(6, 'resumed', 'job is being reprocessed after a failure'),
+    LookupType(7, 'created', 'job product has been created and stored locally'),
+    LookupType(8, 'uploading', 'job is being uploaded to public storage'),
 ]
+
 JOB_STATUS_DICT = {item.name: item.id for item in JOB_STATUS}
-JOB_STATUS_DICT_ID = {item.id: item.name for item in JOB_STATUS}
 
 VALUE_MAPPINGS = {
     # Award Level
@@ -34,7 +47,8 @@ VALUE_MAPPINGS = {
         'download_name': 'prime_awards',
         'contract_data': 'award__latest_transaction__contract_data',
         'assistance_data': 'award__latest_transaction__assistance_data',
-        'filter_function': universal_award_matview_filter
+        'filter_function': universal_award_matview_filter,
+        'is_for_idv': False
     },
     # Transaction Level
     'transactions': {
@@ -44,7 +58,8 @@ VALUE_MAPPINGS = {
         'download_name': 'prime_transactions',
         'contract_data': 'transaction__contract_data',
         'assistance_data': 'transaction__assistance_data',
-        'filter_function': universal_transaction_matview_filter
+        'filter_function': universal_transaction_matview_filter,
+        'is_for_idv': False
     },
     # SubAward Level
     'sub_awards': {
@@ -54,7 +69,8 @@ VALUE_MAPPINGS = {
         'download_name': 'subawards',
         'contract_data': 'award__latest_transaction__contract_data',
         'assistance_data': 'award__latest_transaction__assistance_data',
-        'filter_function': subaward_download
+        'filter_function': subaward_download,
+        'is_for_idv': False
     },
     # Appropriations Account Data
     'account_balances': {
@@ -62,7 +78,8 @@ VALUE_MAPPINGS = {
         'table': AppropriationAccountBalances,
         'table_name': 'account_balances',
         'download_name': 'account_balances',
-        'filter_function': account_download_filter
+        'filter_function': account_download_filter,
+        'is_for_idv': False
     },
     # Object Class Program Activity Account Data
     'object_class_program_activity': {
@@ -70,15 +87,43 @@ VALUE_MAPPINGS = {
         'table': FinancialAccountsByProgramActivityObjectClass,
         'table_name': 'object_class_program_activity',
         'download_name': 'account_breakdown_by_program_activity_object_class',
-        'filter_function': account_download_filter
+        'filter_function': account_download_filter,
+        'is_for_idv': False
     },
     'award_financial': {
         'source_type': 'account',
         'table': FinancialAccountsByAwards,
         'table_name': 'award_financial',
         'download_name': 'account_breakdown_by_award',
-        'filter_function': account_download_filter
-    }
+        'filter_function': account_download_filter,
+        'is_for_idv': False
+    },
+    'idv_orders': {
+        'source_type': 'award',
+        'table': Award,
+        'table_name': 'idv_orders',
+        'download_name': 'IDV_{piid}_Orders',
+        'contract_data': 'latest_transaction__contract_data',
+        'filter_function': idv_order_filter,
+        'is_for_idv': True
+    },
+    'idv_federal_account_funding': {
+        'source_type': 'account',
+        'table': FinancialAccountsByAwards,
+        'table_name': 'award_financial',
+        'download_name': 'IDV_{piid}_FederalAccountFunding',
+        'filter_function': idv_treasury_account_funding_filter,
+        'is_for_idv': True
+    },
+    'idv_transaction_history': {
+        'source_type': 'award',
+        'table': TransactionNormalized,
+        'table_name': 'idv_transaction_history',
+        'download_name': 'IDV_{piid}_TransactionHistory',
+        'contract_data': 'contract_data',
+        'filter_function': idv_transaction_filter,
+        'is_for_idv': True
+    },
 }
 
 # Bulk Download still uses "prime awards" instead of "transactions"

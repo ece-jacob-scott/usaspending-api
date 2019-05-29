@@ -41,13 +41,23 @@ class IDVAwardsTestCase(TestCase):
             mommy.make(
                 'awards.TransactionFPDS',
                 transaction_id=transaction_id,
-                funding_agency_name='funding_agency_name_%s' % transaction_id,
+                funding_agency_name='subtier_funding_agency_name_%s' % transaction_id,
                 ordering_period_end_date='2018-01-%02d' % transaction_id
             )
 
-        # We'll need some awards.
+        # We'll need some awards (and agencies).
         for award_id in range(1, AWARD_COUNT + 1):
             parent_n = PARENTS.get(award_id)
+            mommy.make(
+                'references.Agency',
+                id=award_id * 12,
+                toptier_agency_id=award_id * 12
+            )
+            mommy.make(
+                'references.ToptierAgency',
+                toptier_agency_id=award_id * 12,
+                name='toptier_funding_agency_name_%s' % (award_id * 12),
+            )
             mommy.make(
                 'awards.Award',
                 id=award_id,
@@ -63,6 +73,7 @@ class IDVAwardsTestCase(TestCase):
                 description='description_%s' % award_id,
                 period_of_performance_current_end_date='2018-03-%02d' % award_id,
                 period_of_performance_start_date='2018-02-%02d' % award_id,
+                funding_agency_id=award_id * 12,
             )
 
         # We'll need some parent_awards.
@@ -93,7 +104,8 @@ class IDVAwardsTestCase(TestCase):
                 'award_id': award_id,
                 'award_type': 'type_description_%s' % award_id,
                 'description': 'description_%s' % award_id,
-                'funding_agency': 'funding_agency_name_%s' % award_id,
+                'funding_agency': 'toptier_funding_agency_name_%s' % (award_id * 12),
+                'funding_agency_id': award_id * 12,
                 'generated_unique_award_id': 'GENERATED_UNIQUE_AWARD_ID_%s' % award_id,
                 'last_date_to_order': '2018-01-%02d' % award_id,
                 'obligated_amount': float(award_id * (1000 if award_id in IDVS else 1)),
@@ -162,20 +174,30 @@ class IDVAwardsTestCase(TestCase):
             (None, None, 1, False, False)
         )
 
-    def test_idv_flag(self):
+    def test_type(self):
 
         self._test_post(
-            {'award_id': 1, 'idv': True},
+            {'award_id': 1, 'type': 'child_idvs'},
             (None, None, 1, False, False, 5, 4, 3)
         )
 
         self._test_post(
-            {'award_id': 1, 'idv': False},
+            {'award_id': 1, 'type': 'child_awards'},
             (None, None, 1, False, False, 6)
         )
 
         self._test_post(
-            {'award_id': 1, 'idv': 'BOGUS IDV'},
+            {'award_id': 1, 'type': 'grandchild_awards'},
+            (None, None, 1, False, False)
+        )
+
+        self._test_post(
+            {'award_id': 2, 'type': 'grandchild_awards'},
+            (None, None, 1, False, False, 14, 13, 12, 11)
+        )
+
+        self._test_post(
+            {'award_id': 1, 'type': 'BOGUS TYPE'},
             expected_status_code=status.HTTP_400_BAD_REQUEST
         )
 
@@ -272,47 +294,84 @@ class IDVAwardsTestCase(TestCase):
     def test_complete_queries(self):
 
         self._test_post(
-            {'award_id': 1, 'idv': True, 'limit': 3, 'page': 1, 'sort': 'description', 'order': 'asc'},
+            {'award_id': 1, 'type': 'child_idvs', 'limit': 3, 'page': 1, 'sort': 'description', 'order': 'asc'},
             (None, None, 1, False, False, 3, 4, 5)
         )
 
         self._test_post(
-            {'award_id': 1, 'idv': False, 'limit': 3, 'page': 1, 'sort': 'description', 'order': 'asc'},
+            {'award_id': 1, 'type': 'child_awards', 'limit': 3, 'page': 1, 'sort': 'description', 'order': 'asc'},
             (None, None, 1, False, False, 6)
         )
 
     def test_no_grandchildren_returned(self):
 
         self._test_post(
-            {'award_id': 2, 'idv': True},
+            {'award_id': 2, 'type': 'child_idvs'},
             (None, None, 1, False, False, 8, 7)
         )
 
         self._test_post(
-            {'award_id': 2, 'idv': False},
+            {'award_id': 2, 'type': 'child_awards'},
             (None, None, 1, False, False, 10, 9)
         )
 
     def test_no_parents_returned(self):
 
         self._test_post(
-            {'award_id': 7, 'idv': True},
+            {'award_id': 7, 'type': 'child_idvs'},
             (None, None, 1, False, False)
         )
 
         self._test_post(
-            {'award_id': 7, 'idv': False},
+            {'award_id': 7, 'type': 'child_awards'},
             (None, None, 1, False, False, 12, 11)
         )
 
     def test_nothing_returned_for_bogus_contract_relationship(self):
 
         self._test_post(
-            {'award_id': 9, 'idv': True},
+            {'award_id': 9, 'type': 'child_idvs'},
             (None, None, 1, False, False)
         )
 
         self._test_post(
-            {'award_id': 9, 'idv': False},
+            {'award_id': 9, 'type': 'child_awards'},
             (None, None, 1, False, False)
         )
+
+    def test_missing_agency(self):
+        # A bug was found where awards wouldn't show up if the funding agency was
+        # null.  This will reproduce that situation.
+        _id = 99999
+
+        mommy.make(
+            'awards.TransactionNormalized',
+            id=_id
+        )
+        mommy.make(
+            'awards.TransactionFPDS',
+            transaction_id=_id,
+            funding_agency_name='subtier_funding_agency_name_%s' % _id
+        )
+        parent_n = PARENTS.get(3)  # Use use parent information for I3
+        mommy.make(
+            'awards.Award',
+            id=_id,
+            generated_unique_award_id='GENERATED_UNIQUE_AWARD_ID_%s' % _id,
+            type='CONTRACT_%s' % _id,
+            total_obligation=_id,
+            piid='piid_%s' % _id,
+            fpds_agency_id='fpds_agency_id_%s' % _id,
+            parent_award_piid='piid_%s' % parent_n,
+            fpds_parent_agency_id='fpds_agency_id_%s' % parent_n,
+            latest_transaction_id=_id,
+            type_description='type_description_%s' % _id,
+            description='description_%s' % _id,
+            period_of_performance_current_end_date='2018-03-28',
+            period_of_performance_start_date='2018-02-28'
+        )
+
+        response = self.client.post(ENDPOINT, {'award_id': parent_n, 'type': 'child_awards'})
+
+        # This should return two results.  Prior to the bug, only one result would be returned.
+        assert len(response.data['results']) == 2

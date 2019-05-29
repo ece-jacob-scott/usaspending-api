@@ -6,7 +6,6 @@ import signal
 from django.core.management.base import CommandError
 from django.core.management import call_command
 from django.db import connections, transaction
-from django.core.cache import caches
 import pandas as pd
 import numpy as np
 
@@ -15,7 +14,7 @@ from usaspending_api.accounts.models import (
 from usaspending_api.awards.models import Award, FinancialAccountsByAwards
 from usaspending_api.financial_activities.models import (
     FinancialAccountsByProgramActivityObjectClass, TasProgramActivityObjectClassQuarterly)
-from usaspending_api.common.helpers.generic_helper import upper_case_dict_values
+from usaspending_api.common.helpers.dict_helpers import upper_case_dict_values
 from usaspending_api.references.models import ObjectClass, RefProgramActivity
 from usaspending_api.submissions.models import SubmissionAttributes
 from usaspending_api.etl.award_helpers import get_award_financial_transaction, get_awarding_agency
@@ -33,7 +32,6 @@ TAS_ID_TO_ACCOUNT = {}
 # Lists to store for update_awards and update_contract_awards
 AWARD_UPDATE_ID_LIST = []
 
-awards_cache = caches['awards']
 logger = logging.getLogger('console')
 
 
@@ -589,8 +587,8 @@ def find_matching_award(piid=None, parent_piid=None, fain=None, uri=None):
         if parent_piid:
             filters['parent_award_piid'] = parent_piid
     elif fain and not uri:
-            # if only the fain is populated, filter on that
-            filters['fain'] = fain
+        # if only the fain is populated, filter on that
+        filters['fain'] = fain
     elif not fain and uri:
         # if only the uri is populated, filter on that
         filters['uri'] = uri
@@ -700,8 +698,6 @@ def load_file_c(submission_attributes, db_cursor, award_financial_frame):
 
         # Still using the cpe|fyb regex compiled above for reverse
         load_data_into_model(award_financial_data, row, value_map=value_map_faba, save=True, reverse=reverse)
-
-    awards_cache.clear()
 
     for key in skipped_tas:
         logger.info('Skipped %d rows due to missing TAS: %s', skipped_tas[key]['count'], key)

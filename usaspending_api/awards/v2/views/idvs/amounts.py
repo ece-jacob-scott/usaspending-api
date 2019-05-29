@@ -9,14 +9,11 @@ from rest_framework.response import Response
 from usaspending_api.awards.models import ParentAward
 from usaspending_api.common.cache_decorator import cache_response
 from usaspending_api.common.views import APIDocumentationView
-from usaspending_api.core.validator.award import get_internal_or_generated_award_id_rule
-from usaspending_api.core.validator.tinyshield import TinyShield
+from usaspending_api.common.validator.award import get_internal_or_generated_award_id_model
+from usaspending_api.common.validator.tinyshield import TinyShield
 
 
 logger = logging.getLogger('console')
-
-
-TINY_SHIELD_RULES = TinyShield([get_internal_or_generated_award_id_rule()])
 
 
 class IDVAmountsViewSet(APIDocumentationView):
@@ -26,7 +23,7 @@ class IDVAmountsViewSet(APIDocumentationView):
 
     @staticmethod
     def _parse_and_validate_request(requested_award: str) -> dict:
-        return TINY_SHIELD_RULES.block({'award_id': requested_award})
+        return TinyShield([get_internal_or_generated_award_id_model()]).block({'award_id': requested_award})
 
     @staticmethod
     def _business_logic(request_data: dict) -> OrderedDict:
@@ -41,11 +38,18 @@ class IDVAmountsViewSet(APIDocumentationView):
             return OrderedDict((
                 ('award_id', parent_award.award_id),
                 ('generated_unique_award_id', parent_award.generated_unique_award_id),
-                ('idv_count', parent_award.direct_idv_count),
-                ('contract_count', parent_award.direct_contract_count),
-                ('rollup_total_obligation', parent_award.rollup_total_obligation),
-                ('rollup_base_and_all_options_value', parent_award.rollup_base_and_all_options_value),
-                ('rollup_base_exercised_options_val', parent_award.rollup_base_exercised_options_val),
+                ('child_idv_count', parent_award.direct_idv_count),
+                ('child_award_count', parent_award.direct_contract_count),
+                ('child_award_total_obligation', parent_award.direct_total_obligation),
+                ('child_award_base_and_all_options_value', parent_award.direct_base_and_all_options_value),
+                ('child_award_base_exercised_options_val', parent_award.direct_base_exercised_options_val),
+                ('grandchild_award_count', parent_award.rollup_contract_count - parent_award.direct_contract_count),
+                ('grandchild_award_total_obligation',
+                    parent_award.rollup_total_obligation - parent_award.direct_total_obligation),
+                ('grandchild_award_base_and_all_options_value',
+                    parent_award.rollup_base_and_all_options_value - parent_award.direct_base_and_all_options_value),
+                ('grandchild_award_base_exercised_options_val',
+                    parent_award.rollup_base_exercised_options_val - parent_award.direct_base_exercised_options_val),
             ))
         except ParentAward.DoesNotExist:
             logger.info("No IDV Award found where '%s' is '%s'" % next(iter(request_data.items())))

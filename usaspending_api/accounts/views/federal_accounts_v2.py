@@ -10,7 +10,7 @@ from usaspending_api.common.cache_decorator import cache_response
 from usaspending_api.common.exceptions import InvalidParameterException
 from usaspending_api.common.helpers.generic_helper import get_simple_pagination_metadata
 from usaspending_api.common.views import APIDocumentationView
-from usaspending_api.core.validator.tinyshield import TinyShield
+from usaspending_api.common.validator.tinyshield import TinyShield
 from usaspending_api.financial_activities.models import FinancialAccountsByProgramActivityObjectClass
 from usaspending_api.references.models import ToptierAgency
 from usaspending_api.submissions.models import SubmissionAttributes
@@ -425,7 +425,6 @@ class FederalAccountsViewSet(APIDocumentationView):
 
     @cache_response()
     def post(self, request, format=None):
-
         """ Return all high-level Federal Account information """
         request_data = self._parse_and_validate_request(request.data)
         limit = request_data['limit']
@@ -463,7 +462,7 @@ class FederalAccountsViewSet(APIDocumentationView):
             tta_list = DOD_ARMED_FORCES_CGAC if agency_id == DOD_CGAC else [agency_id]
             tta_filter = Q()
             for tta in tta_list:
-                    tta_filter |= Q(account_number__startswith=tta)
+                tta_filter |= Q(account_number__startswith=tta)
             queryset &= queryset.filter(tta_filter)
 
         if sort_direction == 'desc':

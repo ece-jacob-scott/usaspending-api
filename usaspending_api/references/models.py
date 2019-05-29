@@ -196,6 +196,7 @@ class ToptierAgency(models.Model):
     name = models.TextField(blank=True, null=True, verbose_name="Top-Tier Agency Name", db_index=True)
     mission = models.TextField(blank=True, null=True, verbose_name="Top-Tier Agency Mission Statement")
     website = models.URLField(blank=True, null=True, verbose_name="Top-Tier Agency Website")
+    justification = models.URLField(blank=True, null=True, verbose_name="Top-Tier Agency Congressional Justification")
     icon_filename = models.TextField(blank=True, null=True, verbose_name="Top-Tier Agency Icon Filename")
 
     class Meta:
@@ -304,7 +305,7 @@ class Location(DataSourceTrackedModel, DeleteIfChildlessMixin):
                 if state_obj:
                     self.state_name = state_obj['name']
 
-    zip_code_pattern = re.compile('^(\d{5})\-?(\d{4})?$')
+    zip_code_pattern = re.compile(r'^(\d{5})\-?(\d{4})?$')
 
     def fill_missing_zip5(self):
         """Where zip5 is blank, fill from a valid zip4, if avaliable"""
