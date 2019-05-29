@@ -56,11 +56,8 @@ def date_list_to_queryset(date_list, table):
         if date_type not in ["action_date", "last_modified_date", "date_signed"]:
             raise InvalidParameterException('Invalid date_type: {}'.format(date_type))
 
-        kwargs = {
-            "{}__gte".format(date_type): v["start_date"],
-            "{}__lte".format(date_type): v["end_date"],
-        }
-        or_queryset |= Q(**kwargs)
+        or_queryset |= (Q(action_date__range=[v["start_date"], v["end_date"]])
+                        & Q(date_signed__range=[v["start_date"], v["end_date"]]))
 
     return table.objects.filter(or_queryset)
 
