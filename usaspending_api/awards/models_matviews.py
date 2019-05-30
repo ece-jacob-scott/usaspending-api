@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVectorField
 from django.core.cache import CacheKeyWarning
 from django.db import models
+from django.contrib.postgres import fields
 
 from usaspending_api.awards.models import Award, Subaward, TransactionNormalized
 
@@ -175,6 +176,7 @@ class UniversalAwardView(models.Model):
     action_date = models.DateField()
     fiscal_year = models.IntegerField()
     last_modified_date = models.TextField()
+    date_range = fields.DateRangeField()
 
     period_of_performance_start_date = models.DateField()
     period_of_performance_current_end_date = models.DateField()

@@ -5,7 +5,6 @@ import logging
 
 from django.db.models import Sum, F, Q, Case, When
 from django.db.models.functions import Coalesce
-
 from usaspending_api.awards.models import TransactionNormalized
 from usaspending_api.awards.models_matviews import SubawardView
 from usaspending_api.awards.v2.lookups.lookups import award_type_mapping
@@ -16,6 +15,7 @@ from usaspending_api.common.helpers.generic_helper import generate_date_from_str
 from usaspending_api.common.helpers.sql_helpers import get_connection
 from usaspending_api.references.constants import WEBSITE_AWARD_BINS
 
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +56,7 @@ def date_list_to_queryset(date_list, table):
         if date_type not in ["action_date", "last_modified_date", "date_signed"]:
             raise InvalidParameterException('Invalid date_type: {}'.format(date_type))
 
-        or_queryset |= (Q(action_date__range=[v["start_date"], v["end_date"]])
-                        & Q(date_signed__range=[v["start_date"], v["end_date"]]))
+        or_queryset |= Q(date_range__overlap=[v["start_date"].strftime('%Y-%m-%d'), v["end_date"].strftime('%Y-%m-%d')])
 
     return table.objects.filter(or_queryset)
 
