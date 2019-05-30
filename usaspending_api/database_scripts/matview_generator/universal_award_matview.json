@@ -39,6 +39,7 @@
     "  awards.period_of_performance_current_end_date,",
     "  awards.date_signed,",
     "  transaction_fpds.ordering_period_end_date::date,",
+    "  daterange(awards.date_signed, latest_transaction.action_date, '[]') as date_range",
     "",
     "  transaction_fabs.original_loan_subsidy_cost,",
     "  transaction_fabs.face_value_loan_guarantee,",
