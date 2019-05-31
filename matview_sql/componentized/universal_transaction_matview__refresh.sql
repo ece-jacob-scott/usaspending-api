@@ -1,0 +1,2 @@
+REFRESH MATERIALIZED VIEW CONCURRENTLY universal_transaction_matview WITH DATA;
+VACUUM ANALYZE VERBOSE universal_transaction_matview;

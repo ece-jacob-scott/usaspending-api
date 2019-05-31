@@ -1,0 +1,2 @@
+REFRESH MATERIALIZED VIEW CONCURRENTLY summary_view_cfda_number WITH DATA;
+VACUUM ANALYZE VERBOSE summary_view_cfda_number;

@@ -1,0 +1,2 @@
+ANALYZE VERBOSE summary_transaction_recipient_view;
+GRANT SELECT ON summary_transaction_recipient_view TO readonly;

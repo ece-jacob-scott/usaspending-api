@@ -1,0 +1,2 @@
+REFRESH MATERIALIZED VIEW CONCURRENTLY summary_transaction_view WITH DATA;
+VACUUM ANALYZE VERBOSE summary_transaction_view;

@@ -1,0 +1,12 @@
+CREATE UNIQUE INDEX idx_230a1cf1$922_deterministic_unique_hash_temp ON summary_view_temp USING BTREE(duh) WITH (fillfactor = 97);
+CREATE INDEX idx_230a1cf1$922_action_date_temp ON summary_view_temp USING BTREE(action_date DESC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_230a1cf1$922_type_temp ON summary_view_temp USING BTREE(type) WITH (fillfactor = 97);
+CREATE INDEX idx_230a1cf1$922_fy_temp ON summary_view_temp USING BTREE(fiscal_year DESC NULLS LAST) WITH (fillfactor = 97);
+CREATE INDEX idx_230a1cf1$922_pulled_from_temp ON summary_view_temp USING BTREE(pulled_from) WITH (fillfactor = 97) WHERE pulled_from IS NOT NULL;
+CREATE INDEX idx_230a1cf1$922_awarding_agency_id_temp ON summary_view_temp USING BTREE(awarding_agency_id ASC NULLS LAST) WITH (fillfactor = 97) WHERE awarding_agency_id IS NOT NULL;
+CREATE INDEX idx_230a1cf1$922_funding_agency_id_temp ON summary_view_temp USING BTREE(funding_agency_id ASC NULLS LAST) WITH (fillfactor = 97) WHERE funding_agency_id IS NOT NULL;
+CREATE INDEX idx_230a1cf1$922_awarding_toptier_agency_name_temp ON summary_view_temp USING BTREE(awarding_toptier_agency_name) WITH (fillfactor = 97) WHERE awarding_toptier_agency_name IS NOT NULL;
+CREATE INDEX idx_230a1cf1$922_awarding_subtier_agency_name_temp ON summary_view_temp USING BTREE(awarding_subtier_agency_name) WITH (fillfactor = 97) WHERE awarding_subtier_agency_name IS NOT NULL;
+CREATE INDEX idx_230a1cf1$922_funding_toptier_agency_name_temp ON summary_view_temp USING BTREE(funding_toptier_agency_name) WITH (fillfactor = 97) WHERE funding_toptier_agency_name IS NOT NULL;
+DO $$ BEGIN RAISE NOTICE '10 indexes created, 1 remaining'; END $$;
+CREATE INDEX idx_230a1cf1$922_funding_subtier_agency_name_temp ON summary_view_temp USING BTREE(funding_subtier_agency_name) WITH (fillfactor = 97) WHERE funding_subtier_agency_name IS NOT NULL;

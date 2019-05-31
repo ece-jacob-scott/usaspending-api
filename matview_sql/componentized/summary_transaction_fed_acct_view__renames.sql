@@ -1,0 +1,21 @@
+ALTER MATERIALIZED VIEW IF EXISTS summary_transaction_fed_acct_view RENAME TO summary_transaction_fed_acct_view_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_deterministic_unique_hash RENAME TO idx_230a1cf1$bd5_deterministic_unique_hash_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_date RENAME TO idx_230a1cf1$bd5_date_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_action_date_and_type RENAME TO idx_230a1cf1$bd5_action_date_and_type_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_type RENAME TO idx_230a1cf1$bd5_type_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_pulled_from RENAME TO idx_230a1cf1$bd5_pulled_from_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_federal_account_id RENAME TO idx_230a1cf1$bd5_federal_account_id_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_recipient_unique_id RENAME TO idx_230a1cf1$bd5_recipient_unique_id_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_recipient_hash RENAME TO idx_230a1cf1$bd5_recipient_hash_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$bd5_parent_recipient_unique_id RENAME TO idx_230a1cf1$bd5_parent_recipient_unique_id_old;
+
+ALTER MATERIALIZED VIEW summary_transaction_fed_acct_view_temp RENAME TO summary_transaction_fed_acct_view;
+ALTER INDEX idx_230a1cf1$bd5_deterministic_unique_hash_temp RENAME TO idx_230a1cf1$bd5_deterministic_unique_hash;
+ALTER INDEX idx_230a1cf1$bd5_date_temp RENAME TO idx_230a1cf1$bd5_date;
+ALTER INDEX idx_230a1cf1$bd5_action_date_and_type_temp RENAME TO idx_230a1cf1$bd5_action_date_and_type;
+ALTER INDEX idx_230a1cf1$bd5_type_temp RENAME TO idx_230a1cf1$bd5_type;
+ALTER INDEX idx_230a1cf1$bd5_pulled_from_temp RENAME TO idx_230a1cf1$bd5_pulled_from;
+ALTER INDEX idx_230a1cf1$bd5_federal_account_id_temp RENAME TO idx_230a1cf1$bd5_federal_account_id;
+ALTER INDEX idx_230a1cf1$bd5_recipient_unique_id_temp RENAME TO idx_230a1cf1$bd5_recipient_unique_id;
+ALTER INDEX idx_230a1cf1$bd5_recipient_hash_temp RENAME TO idx_230a1cf1$bd5_recipient_hash;
+ALTER INDEX idx_230a1cf1$bd5_parent_recipient_unique_id_temp RENAME TO idx_230a1cf1$bd5_parent_recipient_unique_id;

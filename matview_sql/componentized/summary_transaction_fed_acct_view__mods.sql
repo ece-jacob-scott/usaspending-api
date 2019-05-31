@@ -1,0 +1,2 @@
+ANALYZE VERBOSE summary_transaction_fed_acct_view;
+GRANT SELECT ON summary_transaction_fed_acct_view TO readonly;

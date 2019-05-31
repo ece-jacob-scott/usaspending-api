@@ -1,0 +1,2 @@
+REFRESH MATERIALIZED VIEW CONCURRENTLY summary_view_naics_codes WITH DATA;
+VACUUM ANALYZE VERBOSE summary_view_naics_codes;

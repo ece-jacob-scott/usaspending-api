@@ -1,0 +1,23 @@
+ALTER MATERIALIZED VIEW IF EXISTS summary_award_view RENAME TO summary_award_view_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_deterministic_unique_hash RENAME TO idx_230a1cf1$947_deterministic_unique_hash_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_action_date RENAME TO idx_230a1cf1$947_action_date_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_type RENAME TO idx_230a1cf1$947_type_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_pulled_from RENAME TO idx_230a1cf1$947_pulled_from_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_awarding_agency_id RENAME TO idx_230a1cf1$947_awarding_agency_id_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_funding_agency_id RENAME TO idx_230a1cf1$947_funding_agency_id_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_awarding_toptier_agency_name RENAME TO idx_230a1cf1$947_awarding_toptier_agency_name_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_awarding_subtier_agency_name RENAME TO idx_230a1cf1$947_awarding_subtier_agency_name_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_funding_toptier_agency_name RENAME TO idx_230a1cf1$947_funding_toptier_agency_name_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$947_funding_subtier_agency_name RENAME TO idx_230a1cf1$947_funding_subtier_agency_name_old;
+
+ALTER MATERIALIZED VIEW summary_award_view_temp RENAME TO summary_award_view;
+ALTER INDEX idx_230a1cf1$947_deterministic_unique_hash_temp RENAME TO idx_230a1cf1$947_deterministic_unique_hash;
+ALTER INDEX idx_230a1cf1$947_action_date_temp RENAME TO idx_230a1cf1$947_action_date;
+ALTER INDEX idx_230a1cf1$947_type_temp RENAME TO idx_230a1cf1$947_type;
+ALTER INDEX idx_230a1cf1$947_pulled_from_temp RENAME TO idx_230a1cf1$947_pulled_from;
+ALTER INDEX idx_230a1cf1$947_awarding_agency_id_temp RENAME TO idx_230a1cf1$947_awarding_agency_id;
+ALTER INDEX idx_230a1cf1$947_funding_agency_id_temp RENAME TO idx_230a1cf1$947_funding_agency_id;
+ALTER INDEX idx_230a1cf1$947_awarding_toptier_agency_name_temp RENAME TO idx_230a1cf1$947_awarding_toptier_agency_name;
+ALTER INDEX idx_230a1cf1$947_awarding_subtier_agency_name_temp RENAME TO idx_230a1cf1$947_awarding_subtier_agency_name;
+ALTER INDEX idx_230a1cf1$947_funding_toptier_agency_name_temp RENAME TO idx_230a1cf1$947_funding_toptier_agency_name;
+ALTER INDEX idx_230a1cf1$947_funding_subtier_agency_name_temp RENAME TO idx_230a1cf1$947_funding_subtier_agency_name;

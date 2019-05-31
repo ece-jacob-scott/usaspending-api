@@ -1,0 +1,2 @@
+DROP MATERIALIZED VIEW IF EXISTS summary_transaction_recipient_view_temp CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS summary_transaction_recipient_view_old CASCADE;

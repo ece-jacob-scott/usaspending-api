@@ -1,0 +1,19 @@
+ALTER MATERIALIZED VIEW IF EXISTS summary_transaction_recipient_view RENAME TO summary_transaction_recipient_view_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_deterministic_unique_hash RENAME TO idx_230a1cf1$033_deterministic_unique_hash_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_ordered_action_date RENAME TO idx_230a1cf1$033_ordered_action_date_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_action_date_and_type RENAME TO idx_230a1cf1$033_action_date_and_type_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_type RENAME TO idx_230a1cf1$033_type_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_pulled_from RENAME TO idx_230a1cf1$033_pulled_from_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_recipient_unique_id RENAME TO idx_230a1cf1$033_recipient_unique_id_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_recipient_hash RENAME TO idx_230a1cf1$033_recipient_hash_old;
+ALTER INDEX IF EXISTS idx_230a1cf1$033_parent_recipient_unique_id RENAME TO idx_230a1cf1$033_parent_recipient_unique_id_old;
+
+ALTER MATERIALIZED VIEW summary_transaction_recipient_view_temp RENAME TO summary_transaction_recipient_view;
+ALTER INDEX idx_230a1cf1$033_deterministic_unique_hash_temp RENAME TO idx_230a1cf1$033_deterministic_unique_hash;
+ALTER INDEX idx_230a1cf1$033_ordered_action_date_temp RENAME TO idx_230a1cf1$033_ordered_action_date;
+ALTER INDEX idx_230a1cf1$033_action_date_and_type_temp RENAME TO idx_230a1cf1$033_action_date_and_type;
+ALTER INDEX idx_230a1cf1$033_type_temp RENAME TO idx_230a1cf1$033_type;
+ALTER INDEX idx_230a1cf1$033_pulled_from_temp RENAME TO idx_230a1cf1$033_pulled_from;
+ALTER INDEX idx_230a1cf1$033_recipient_unique_id_temp RENAME TO idx_230a1cf1$033_recipient_unique_id;
+ALTER INDEX idx_230a1cf1$033_recipient_hash_temp RENAME TO idx_230a1cf1$033_recipient_hash;
+ALTER INDEX idx_230a1cf1$033_parent_recipient_unique_id_temp RENAME TO idx_230a1cf1$033_parent_recipient_unique_id;

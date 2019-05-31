@@ -1,0 +1,2 @@
+DROP MATERIALIZED VIEW IF EXISTS summary_award_view_temp CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS summary_award_view_old CASCADE;

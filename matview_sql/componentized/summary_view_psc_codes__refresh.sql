@@ -1,0 +1,2 @@
+REFRESH MATERIALIZED VIEW CONCURRENTLY summary_view_psc_codes WITH DATA;
+VACUUM ANALYZE VERBOSE summary_view_psc_codes;
