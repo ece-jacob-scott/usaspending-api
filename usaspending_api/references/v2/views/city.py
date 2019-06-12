@@ -51,9 +51,10 @@ class CityAutocompleteViewSet(APIDocumentationView):
         search_text, country, state = prepare_search_terms(request.data)
         scope = "recipient_location" if request.data["filter"]["scope"] == "recipient_location" else "pop"
         limit = request.data["limit"]
-        return_fields = ["{}_city_name".format(scope),
-                         "{}_state_code".format(scope),
-                         "{}_country_code.keyword".format(scope)]
+        return_fields = [
+            "{}_city_name".format(scope),
+            "{}_state_code".format(scope),
+        ]
 
         query = create_elasticsearch_query(return_fields, scope, search_text, country, state, limit)
         sorted_results = query_elasticsearch(query)
@@ -74,10 +75,7 @@ def create_elasticsearch_query(return_fields, scope, search_text, country, state
     # so that we don't get inconsistent results when the limit gets down to a very low number (e.g. lower than the
     # number of shards we have) such that it may provide inconsistent results in repeated queries
     city_buckets = limit + 100
-    if country == ALL_FOREIGN_COUNTRIES:
-        aggs = {"states": {"terms": {"field": return_fields[2], "size": 100}}}
-    else:
-        aggs = {"states": {"terms": {"field": return_fields[1], "size": 100}}}
+    aggs = {"states": {"terms": {"field": return_fields[1], "size": 100}}}
     query = {
         "_source": return_fields,
         "size": 0,
